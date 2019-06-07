@@ -44,6 +44,14 @@ public class USDAConnector
 	/** The apikey. */
 	private static String apikey = "";
 	
+	private static int rateLimitRemaining = 0;
+	
+	private static boolean rateLimit = true;
+	
+	private static long lastRequestTime = -1;
+	
+	private static long firstHourRequestTime = -1;
+	
 	/**
 	 * Sets up the API connector with the API key that is provided
 	 *
@@ -52,8 +60,14 @@ public class USDAConnector
 	public static void initConnector(String apikey)
 	{
 		USDAConnector.apikey = apikey;
-		//rateLimitRemaining = 3600;
+		rateLimitRemaining = 3600;
 	} 
+	
+	public static void initConnector(String apikey, boolean rateLimit)
+	{
+		initConnector(apikey);
+		USDAConnector.rateLimit = rateLimit;
+	}
 	
 	/**
 	 * Gets a FoodReport object with information from a 'full' report from the USDA NDB API
@@ -70,7 +84,7 @@ public class USDAConnector
 		
 		JsonParser jp = new JsonParser();
 		
-		if(jp.parse(jsonReport).getAsJsonObject().get("notfound").getAsJsonPrimitive().getAsInt() == 1)
+		if(jp.parse(jsonReport).getAsJsonObject().get("notfound").getAsJsonPrimitive().getAsInt() != 0)
 			return null;
 		
 		JsonObject rootFood = jp.parse(jsonReport).getAsJsonObject().get("foods").getAsJsonArray().get(0).getAsJsonObject().get("food").getAsJsonObject();
@@ -132,6 +146,23 @@ public class USDAConnector
 						{
 							f.set(ret.getAllNutrients()[i], cNutrient.get(s).getAsJsonPrimitive().getAsInt());
 						}
+						else if(s.equals("sourcecode"))
+						{
+							try
+							{
+								int[] sources = new int[cNutrient.get(s).getAsJsonArray().size()];
+								for(int k = 0; k < sources.length; k++)
+								{
+									sources[k] = cNutrient.get(s).getAsJsonArray().get(k).getAsJsonPrimitive().getAsInt();
+								}
+								
+								ret.getAllNutrients()[i].setSourcecode(sources);
+							}
+							catch(IllegalStateException e)
+							{
+								ret.getAllNutrients()[i].setSourcecode(new int[0]);
+							}
+						}
 						else if(s.equals("measures"))
 						{
 							Gson g = new Gson();
@@ -181,6 +212,21 @@ public class USDAConnector
 	 */
 	private static String getJSONPage(String url)
 	{
+//		System.out.println(rateLimitRemaining*1000 + " " + (lastRequestTime - firstHourRequestTime));
+		
+		if(rateLimit && rateLimitRemaining*1000 < (lastRequestTime - firstHourRequestTime))
+		{
+			try
+			{
+				Thread.sleep(System.currentTimeMillis() - lastRequestTime);
+			}
+			catch(InterruptedException e)
+			{
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		
 		StringBuilder ret = new StringBuilder();
 		URL pageURL = null;
 		
@@ -199,9 +245,17 @@ public class USDAConnector
 			HttpURLConnection connection = (HttpURLConnection) pageURL.openConnection();
 			connection.setRequestMethod("GET");
 			
+			lastRequestTime = System.currentTimeMillis();
+			
 			try
 			{
-				//rateLimitRemaining = Integer.parseInt(connection.getHeaderField("X-RateLimit-Remaining"));
+				int oldRateLimit = rateLimitRemaining;
+				rateLimitRemaining = Integer.parseInt(connection.getHeaderField("X-RateLimit-Remaining"));
+				
+				if(oldRateLimit < rateLimitRemaining || firstHourRequestTime < 0)
+				{
+					firstHourRequestTime = System.currentTimeMillis();
+				}
 			}
 			catch(Exception e)
 			{
@@ -222,6 +276,8 @@ public class USDAConnector
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		
+		
 		
 		return ret.toString();
 	}

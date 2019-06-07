@@ -53,7 +53,7 @@ public class Measure
 	/**
 	 * Gets the equivalent of the measure expressed as an eunit.
 	 *
-	 * @return the eqv
+	 * @return the measurement
 	 */
 	public double getEqv()
 	{
@@ -63,11 +63,16 @@ public class Measure
 	/**
 	 * Gets the unit in with the equivalent amount is expressed. Usually either gram (g) or milliliter (ml).
 	 *
-	 * @return the eunit
+	 * @return the unit or null if the unit is unrecognized
 	 */
-	public String getEunit()
+	public Unit getEunit()
 	{
-		return eunit;
+		if(eunit.toLowerCase().equals("g"))
+			return Unit.GRAM;
+		else if(eunit.toLowerCase().equals("ml"))
+			return Unit.MILLILITER;
+		
+		return null;
 	}
 
 	/**
@@ -139,5 +144,10 @@ public class Measure
 	void setValue(double value)
 	{
 		this.value = value;
+	}
+	
+	public String toString()
+	{
+		return "Measure: " + this.label + " " + this.eqv + this.getEunit() + " " + this.value;
 	}
 }

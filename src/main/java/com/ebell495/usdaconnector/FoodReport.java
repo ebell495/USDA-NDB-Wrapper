@@ -292,11 +292,16 @@ public class FoodReport
 	/**
 	 * Gets the reporting unit: nutrient values are reported in this unit, usually gram (g) or milliliter (ml).
 	 *
-	 * @return the reporting unit
+	 * @return the reporting unit or null if the unit is unrecognized
 	 */
-	public String getReportingUnit()
+	public Unit getReportingUnit()
 	{
-		return ru;
+		if(ru.toLowerCase().equals("g"))
+			return Unit.GRAM;
+		else if(ru.toLowerCase().equals("ml"))
+			return Unit.MILLILITER;
+		
+		return null;
 	}
 
 	/**

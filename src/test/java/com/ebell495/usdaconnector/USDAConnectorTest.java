@@ -24,13 +24,16 @@ public class USDAConnectorTest
 		assertEquals(f.getNdbno(), "01009");
 		assertEquals(f.getName(), "Cheese, cheddar (Includes foods for USDA's Food Distribution Program)");
 		assertEquals(f.getDatabaseSource(), "Standard Reference");
-		assertEquals(f.getReportingUnit(), "g");
+		assertEquals(f.getReportingUnit(), Unit.GRAM);
 		
 		assertEquals(f.getAllNutrients()[5].getNutrient_id(), 207);
 		assertEquals(f.getAllNutrients()[0].getValue(), 36.75, 0.01f);
 		assertEquals(f.getAllNutrients()[3].getDp(), 39);
 		assertEquals(f.getAllNutrients()[1].getName(), "Energy");
 		assertEquals(f.getAllNutrients()[2].getMeasures()[2].getEqv(), 113.0, 0.01f);
+		
+		assertEquals(f.getNutrient(318).getUnit(), Unit.IU);
+		assertEquals(f.getNutrient("carotene, beta").getUnit(), Unit.MICROGRAM);
 		
 		f = USDAConnector.getFoodReport("1009");
 		assertEquals(f, null);
