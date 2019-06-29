@@ -130,7 +130,7 @@ public class FoodReport
 	}
 
 	/**
-	 * Gets the report type. Either b(Basic), f(Full), s(Statistical). The connector will request a full report but in certain cases a basic report is the only report availible.
+	 * Gets the report type. Either b(Basic), f(Full), s(Statistical). The connector will request a full report but in certain cases a basic report is the only report available.
 	 *
 	 * @return the type
 	 */

@@ -146,6 +146,11 @@ public class Measure
 		this.value = value;
 	}
 	
+	/**
+	 * To string.
+	 *
+	 * @return the string
+	 */
 	public String toString()
 	{
 		return "Measure: " + this.label + " " + this.eqv + this.getEunit() + " " + this.value;

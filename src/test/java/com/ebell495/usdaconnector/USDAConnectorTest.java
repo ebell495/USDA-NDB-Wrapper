@@ -2,6 +2,8 @@ package com.ebell495.usdaconnector;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.ArrayList;
+
 import org.junit.Test;
 
 
@@ -61,6 +63,31 @@ public class USDAConnectorTest
 		assertEquals(f.getAllNutrients()[3].getDp(), 0);
 		assertEquals(f.getAllNutrients()[1].getName(), "Protein");
 		assertEquals(f.getAllNutrients()[2].getMeasures()[0].getEqv(), 150.0, 0.01f);
+	}
+	
+	/**
+	 * Food search test.
+	 */
+	@Test
+	public void foodSearchTest()
+	{
+		USDAConnector.initConnector("DEMO_KEY");	//Replace DEMO_KEY with the key you would like to test with
+		SearchReport st = USDAConnector.getSearchReport("butter");
+		
+		assertEquals(st.getSearchTerms(), "butter");
+		assertEquals(st.getReleaseVersion(), 1);
+		assertEquals(st.getStart(), 0);
+		assertEquals(st.getEnd(), 50);
+		
+		assertEquals(st.getSort(), "r");
+		
+		
+		ArrayList<SearchItem> items = st.getItem();
+		
+		assertEquals(items.size(), 50);
+		assertEquals(items.get(0).getOffset(), 0);
+		assertEquals(items.get(1).getNdbno(), "04585");
+		assertEquals(items.get(2).getName(), "Croissants, butter");
 	}
 
 }
